@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <!-- <script type="text/javascript" src="jquery-1.12.1.js"></script> -->
+    <script type="text/javascript" src="Jerry.js"></script>
+    <script type="text/javascript">
+        //这才是ajax
+        // $.ajax({
+        //     type:'get',
+        //     url:'http://localhost/today/frame/json.php',
+        //     data : {username:'zhangsan',age:12},
+        //     dataType:'json',
+        //     success:function(data){
+        //         console.log(data);
+        //     }
+        // });
+// http://localhost/today/frame/jsonp.php?callback=jQuery1121010908022981588972_1466066660310&username=zhangsan&age=12&_=1466066660311
+        //这个本质上不是ajax，而是动态创建script标签
+        // $.ajax({
+        //     type:'get',
+        //     url:'http://localhost/today/frame/jsonp.php',
+        //     data : {username:'zhangsan',age:12},
+        //     jsonpCallback : 'fn',
+        //     dataType:'jsonp',
+        //     success:function(data){
+        //         console.log(data);
+        //     }
+        // });
+        window.onload = function(){
+            Jerry.extend({
+                ajax : function(param){
+                    var deaults = {
+                        type : 'get',
+                        async : true,
+                        url : '#',
+                        dataType : 'json',
+                        jsonp : 'callback',
+                        success:function(data){conosle.log(data);},
+                        error:function(data){conosle.log(data);}
+                    }
+                    Jerry.extend(deaults,param);
+
+                    if(deaults.dataType === 'json'){
+                        //发送ajax请求
+                        jsonFn(deaults);
+                    }else if(deaults.dataType === 'jsonp'){
+                        //进行跨域请求（通过script的src属性发送请求）
+                        jsonpFn(deaults);
+                    }
+
+                    function jsonFn(p){
+                        //创建xhr对象
+                        var xhr = null;
+                        if(window.XMLHttpRequest){
+                            xhr = new XMLHttpRequest();
+                        }else{
+                            xhr = new ActiveXObject('Microsoft.XMLHTTP');
+                        }
+                        //拼接请求参数的格式
+                        var param = '';
+                        if(p.data){
+                            for(var key in p.data){
+                                param += key + '=' + p.data[key] + '&';
+                            }
+                        }
+                        if(param){
+                            param = param.substring(0,param.length-1);
+                        }
+                        if(p.type == 'get'){
+                            p.url += '?' + param;
+                            param = null;
+                        }
+                        //准备发送
+                        xhr.open(p.type,p.url,p.async);
+                        if(p.type == 'post'){
+                            //设置请求头信息
+                            xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+                        }
+                        //执行发送动作
+                        xhr.send(param);
+                        //指定回调函数
+                        xhr.onreadystatechange = function(){
+                            if(xhr.readyState === 4){
+                                if(xhr.status === 200){
+                                    var ret = xhr.responseText;
+                                    p.success(ret);
+                                }else{
+                                    var ret = xhr.responseText;
+                                    p.error(ret);
+                                }
+                            }
+                        }
+                    }
+
+                    function jsonpFn(p){
+                        //跨域请求回调函数的默认名字
+                        var cbName = 'jQuery' + ('1.12.1' + Math.random()).replace(/\D+/g,'') + '_' + (new Date().getTime());
+                        if(p.jsonpCallback){//自定义回调函数的名字
+                            cbName = p.jsonpCallback;
+                        }
+                        //这里是回调函数（实际上向window对象中加了一个方法）
+                        window[cbName] = function(data){
+                            p.success(data);
+                        }
+                        //这里用来处理传递的参数格式
+                        var param = '';
+                        if(p.data){
+                            for(var key in p.data){
+                                param += key + '=' + p.data[key];
+                            }
+                        }
+                        if(param){
+                            param = param.substring(0,param.length-1);
+                        }
+                        var script = document.createElement('script');
+                        script.src = p.src+'?' + p.jsonp + '=' + cbName + '&' + param;
+                        var head = document.getElementsByTagName('head')[0];
+                        head.appendChild(script);
+                    }
+                }
+            });
+            Jerry.ajax = {
+                type:'get',
+                url:'http://localhost:90/ajax/json.php',
+                data:{"username":"zhangsan","password":'123'},
+                success : function(data){
+                    console.log(data);
+                },
+                error : function(data){
+                    console.log(data);
+                }
+            }
+            // Jerry.ajax({
+            //     type : 'post',
+            //     url : 'http://localhost/today/frame/json.php',
+            //     dataType : 'json',
+            //     data : {username : 'zhangsan',age:123},
+            //     success : function(data){
+            //         console.log(data);
+            //     }
+            // });
+//            Jerry.ajax({
+//                url : 'http://localhost/today/frame/jsonp.php',
+//                dataType : 'jsonp',
+//                jsonp : 'cb',
+//                jsonpCallback : 'fn',
+//                data : {username : 'lisi',age:35},
+//                success : function(data){
+//                    console.log(data);
+//                }
+//            });
+        }
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

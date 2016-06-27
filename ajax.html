@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="Jerry.js"></script>
+    <!--<script src="jquery-1.12.1.js"></script>-->
+    <script>
+        window.onload =function(){
+
+            $.ajax({
+                type:'get',
+                url:'http://localhost:90/ajax/jsonp.php',
+//                data:{"username":"zhangsan","password":'123'},
+                jsonp:'cb',
+                dateType :'jsonp',
+                success : function(data){
+                    console.log(typeof data);
+                    console.log(data.username);
+                    console.log(data.password);
+                },
+                error : function(data){
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+
+
+</body>
+</html>
